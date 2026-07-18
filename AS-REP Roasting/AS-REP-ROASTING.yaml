@@ -1,0 +1,37 @@
+title: AS-REP_Roasting
+id: 27f69be9-03c6-45cc-87ed-ff98977813f1
+status: experimental
+description: Detects Kerberos AS-REP requests excluding machine accounts.
+author: Ilya Salkaev
+date: 2026-07-18
+
+logsource:
+  product: windows
+  service: security
+  event_id: 4768
+
+detection:
+  selection:
+    EventID: 4768
+    TicketOptions: 0x40810010
+
+  filter_machine_accounts:
+    TargetUserName|re: '.*\$@.*'
+
+  condition: selection and not filter_machine_accounts
+
+falsepositives:
+  - Legacy applications or services that require Kerberos pre-authentication disabled (e.g., older UNIX/Linux systems, legacy printers)
+  - Service accounts intentionally configured with pre-authentication disabled for compatibility reasons
+  - Administrative tools or scripts that perform authentication testing
+  - Accounts with 'Do not require Kerberos preauthentication' set due to specific business requirements
+  - Temporary misconfiguration during account migration or troubleshooting
+
+level: medium
+
+tags:
+  - attack.credential_access
+  - attack.t1558.003
+  - attack.t1558
+  - attack.t1586
+  - attack.t1110
